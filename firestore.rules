@@ -1,0 +1,54 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Chat Sessions ──────────────────────────────────────────
+    // Users can only read/write their OWN sessions
+    match /sessions/{sessionId} {
+      allow read, write: if request.auth != null
+                         && request.auth.uid == resource.data.uid;
+      allow create: if request.auth != null
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.keys().hasAll(['uid','title','createdAt','updatedAt'])
+                    && request.resource.data.title is string
+                    && request.resource.data.title.size() <= 120;
+    }
+
+    // ── Messages inside a session ──────────────────────────────
+    match /sessions/{sessionId}/messages/{messageId} {
+      allow read, write: if request.auth != null
+                         && get(/databases/$(database)/documents/sessions/$(sessionId)).data.uid
+                            == request.auth.uid;
+      allow create: if request.auth != null
+                    && request.resource.data.keys().hasAll(['role','content','timestamp'])
+                    && request.resource.data.role in ['user','assistant']
+                    && request.resource.data.content is string
+                    && request.resource.data.content.size() <= 8000;
+    }
+
+    // ── Analytics events (write-only for auth users) ──────────
+    match /analytics/{docId} {
+      allow create: if request.auth != null
+                    && request.resource.data.keys().hasAll(['event','timestamp','uid'])
+                    && request.resource.data.uid == request.auth.uid;
+      allow read: if false; // Only Cloud Functions / Admin SDK reads analytics
+    }
+
+    // ── Election FAQ (read-only for all authenticated users) ──
+    match /faqs/{faqId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Populated from Google Sheets via Cloud Function only
+    }
+
+    // ── User profiles ──────────────────────────────────────────
+    match /users/{userId} {
+      allow read, write: if request.auth != null
+                          && request.auth.uid == userId;
+    }
+
+    // Deny everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="MataBot — India's AI election education assistant. Learn about Lok Sabha, voter registration, EVM, NOTA and more.">
+  <meta name="theme-color" content="#FF9933">
+  <meta property="og:title"       content="MataBot — भारत निर्वाचन सहायक">
+  <meta property="og:description" content="India's AI election guide powered by Groq + Firebase">
+  <meta property="og:type"        content="website">
+  <title>MataBot — भारत निर्वाचन सहायक | India Election Assistant</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Yatra+One&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Skip Navigation (Accessibility) -->
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- Screen reader live region -->
+<div id="sr-announcer" role="status" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+
+<!-- Tricolor borders -->
+<div class="ashok-stripe top-stripe"    role="presentation" aria-hidden="true"></div>
+<div class="ashok-stripe bottom-stripe" role="presentation" aria-hidden="true"></div>
+
+<!-- Background mandala -->
+<div class="bg-mandala" id="mandala" aria-hidden="true"></div>
+
+<!-- ══ APP ══════════════════════════════════════════════ -->
+<div class="app" role="application" aria-label="MataBot India Election Assistant">
+
+  <!-- HEADER -->
+  <header class="header" role="banner">
+    <div class="logo-wrap" aria-hidden="true">
+      <div class="logo"><span class="logo-wheel">☸</span></div>
+      <div class="logo-flag">
+        <div class="flag-saffron"></div>
+        <div class="flag-white"><span class="flag-chakra">☸</span></div>
+        <div class="flag-green"></div>
+      </div>
+    </div>
+
+    <div class="header-text">
+      <h1>Mata<span>Bot</span></h1>
+      <p class="header-sub">भारत निर्वाचन सहायक · GROQ + FIREBASE</p>
+    </div>
+
+    <nav class="header-nav" aria-label="User controls">
+      <!-- Google Auth -->
+      <div id="authArea">
+        <button id="signInBtn" class="btn-google" aria-label="Sign in with Google account">
+          <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          Sign in
+        </button>
+        <div id="userInfo" class="user-info hidden" aria-live="polite">
+          <img id="userPhoto" src="" alt="Profile" width="28" height="28" class="user-photo">
+          <span id="userName" class="user-name"></span>
+          <button id="signOutBtn" class="btn-ghost sm" aria-label="Sign out">Sign out</button>
+        </div>
+      </div>
+
+      <div class="header-badges">
+        <div class="eci-badge" role="status" aria-label="ECI Ready">
+          <span class="eci-dot" aria-hidden="true"></span>ECI
+        </div>
+        <button id="historyBtn" class="btn-icon"
+                aria-label="View chat history" aria-expanded="false" aria-controls="historyPanel">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </button>
+        <button id="ttsToggle" class="btn-icon"
+                aria-label="Toggle text-to-speech" aria-pressed="false" title="Read answers aloud">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/>
+          </svg>
+        </button>
+        <button id="clearBtn" class="btn-ghost sm" aria-label="Start new conversation">↺ New</button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- HISTORY PANEL -->
+  <aside id="historyPanel" class="history-panel hidden"
+         role="complementary" aria-label="Chat history" aria-hidden="true">
+    <div class="history-header">
+      <h2>Chat History</h2>
+      <button id="closeHistory" class="btn-icon" aria-label="Close history panel">✕</button>
+    </div>
+    <div id="historyList" class="history-list" role="list" aria-label="Previous conversations"></div>
+    <p id="historyEmpty" class="history-empty">Sign in to save and view your conversations.</p>
+  </aside>
+
+  <!-- QUICK CHIPS -->
+  <nav class="chips-row" aria-label="Quick election topics">
+    <button class="chip" onclick="askChip('How does voting work in India? Explain the complete process.')">🗺️ How voting works</button>
+    <button class="chip" onclick="askChip('What is the Lok Sabha election process and timeline?')">🏛️ Lok Sabha</button>
+    <button class="chip" onclick="askChip('How do I register as a voter in India? What documents do I need?')">📋 Voter registration</button>
+    <button class="chip" onclick="askChip('What is the role of the Election Commission of India?')">⚖️ ECI role</button>
+    <button class="chip" onclick="askChip('How does the EVM and VVPAT system work in Indian elections?')">🖥️ EVM & VVPAT</button>
+    <button class="chip" onclick="askChip('What is NOTA and how does it work in Indian elections?')">✋ NOTA</button>
+    <button class="chip" onclick="askChip('What is the Model Code of Conduct in Indian elections?')">📜 Model Code</button>
+    <button class="chip" onclick="askChip('How is the President of India elected?')">👑 Presidential</button>
+  </nav>
+
+  <!-- MAIN CHAT -->
+  <main id="main-content" class="chat" role="log"
+        aria-label="Conversation" aria-live="polite" aria-relevant="additions">
+
+    <!-- Welcome -->
+    <section class="welcome" id="welcomeScreen" aria-labelledby="welcomeTitle">
+      <div class="welcome-header">
+        <div class="tricolor-bar" aria-hidden="true"><div></div><div></div><div></div></div>
+        <span class="welcome-icon" aria-hidden="true">🗳️</span>
+        <h2 id="welcomeTitle">जय हिन्द! Welcome to MataBot</h2>
+        <p>Your complete AI guide to India's democratic election system. Ask in <strong>English</strong> or <strong>Hindi</strong>!</p>
+        <div class="tricolor-bar" aria-hidden="true"><div></div><div></div><div></div></div>
+      </div>
+
+      <!-- Google Sheets FAQ panel -->
+      <div id="faqSection" class="faq-section hidden" aria-labelledby="faqTitle">
+        <h3 id="faqTitle" class="faq-title">📌 Frequently Asked Questions</h3>
+        <div id="faqList" class="faq-list" role="list"></div>
+      </div>
+
+      <div class="welcome-cards" role="list" aria-label="Topic shortcuts">
+        <div class="welcome-card" role="listitem" tabindex="0"
+             onclick="askChip('Explain how Lok Sabha general elections work from start to finish')"
+             onkeydown="handleCardKey(event, 'Explain how Lok Sabha general elections work')">
+          <span class="wc-icon" aria-hidden="true">🏛️</span>
+          <div class="wc-title">Lok Sabha Elections</div>
+          <div class="wc-sub">General election process</div>
+        </div>
+        <div class="welcome-card" role="listitem" tabindex="0"
+             onclick="askChip('Walk me through the complete Indian election timeline with all milestones')"
+             onkeydown="handleCardKey(event,'Walk me through the complete Indian election timeline')">
+          <span class="wc-icon" aria-hidden="true">📅</span>
+          <div class="wc-title">Election Timeline</div>
+          <div class="wc-sub">Schedule & key dates</div>
+        </div>
+        <div class="welcome-card" role="listitem" tabindex="0"
+             onclick="askChip('How does voter registration work in India? How to apply for Voter ID?')"
+             onkeydown="handleCardKey(event,'How does voter registration work in India?')">
+          <span class="wc-icon" aria-hidden="true">🪪</span>
+          <div class="wc-title">Voter ID (EPIC)</div>
+          <div class="wc-sub">Registration process</div>
+        </div>
+        <div class="welcome-card" role="listitem" tabindex="0"
+             onclick="askChip('How does the EVM and VVPAT system work in Indian elections?')"
+             onkeydown="handleCardKey(event,'How does the EVM and VVPAT system work?')">
+          <span class="wc-icon" aria-hidden="true">🖥️</span>
+          <div class="wc-title">EVM & VVPAT</div>
+          <div class="wc-sub">Voting technology</div>
+        </div>
+        <div class="welcome-card" role="listitem" tabindex="0"
+             onclick="askChip('What is the role and power of the Election Commission of India?')"
+             onkeydown="handleCardKey(event,'What is the role of the Election Commission?')">
+          <span class="wc-icon" aria-hidden="true">⚖️</span>
+          <div class="wc-title">Election Commission</div>
+          <div class="wc-sub">ECI powers & duties</div>
+        </div>
+        <div class="welcome-card" role="listitem" tabindex="0"
+             onclick="askChip('How can I contest elections in India? Nomination and candidacy process?')"
+             onkeydown="handleCardKey(event,'How can I contest elections in India?')">
+          <span class="wc-icon" aria-hidden="true">🎙️</span>
+          <div class="wc-title">Contest Elections</div>
+          <div class="wc-sub">Candidacy & nomination</div>
+        </div>
+        <div class="welcome-card" role="listitem" tabindex="0"
+             onclick="askChip('What is the Model Code of Conduct and what are its rules?')"
+             onkeydown="handleCardKey(event,'What is the Model Code of Conduct?')">
+          <span class="wc-icon" aria-hidden="true">📜</span>
+          <div class="wc-title">Model Code</div>
+          <div class="wc-sub">Rules during elections</div>
+        </div>
+        <div class="welcome-card" role="listitem" tabindex="0"
+             onclick="askChip('What is NOTA and how does it work in Indian elections?')"
+             onkeydown="handleCardKey(event,'What is NOTA?')">
+          <span class="wc-icon" aria-hidden="true">✋</span>
+          <div class="wc-title">NOTA Option</div>
+          <div class="wc-sub">None of the above</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- INPUT AREA -->
+  <footer class="input-area">
+    <div class="input-box" id="inputBox" role="group" aria-label="Message input area">
+      <label for="userInput" class="sr-only">Type your election question in English or Hindi</label>
+      <textarea id="userInput"
+                placeholder="Ask about Indian elections... (English या हिंदी में)"
+                rows="1"
+                maxlength="2000"
+                autocomplete="off"
+                spellcheck="true"
+                aria-label="Your question"
+                aria-describedby="inputHint"></textarea>
+      <button class="send-btn" id="sendBtn"
+              aria-label="Send message" title="Send (Enter)">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M22 2L11 13" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+    <div class="input-footer" id="inputHint" aria-label="Keyboard shortcuts">
+      <span class="footer-tag">⚡ Groq</span>
+      <span class="footer-tag firebase-tag">🔥 Firebase</span>
+      <span class="footer-tag sheets-tag">📊 Sheets</span>
+      <span>Press <kbd>Enter</kbd> to send · <kbd>Shift+Enter</kbd> for new line</span>
+    </div>
+  </footer>
+
+</div><!-- /.app -->
+
+<!-- Toast -->
+<div id="toast" role="alert" aria-live="assertive" class="toast hidden"></div>
+
+<!-- Firebase SDK (v9 modular) -->
+<script type="module">
+  import { initializeApp }          from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+    from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+  import { getFirestore, collection, addDoc, getDocs, doc, setDoc, query, where, orderBy, limit, serverTimestamp }
+    from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+  import { getAnalytics, logEvent } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js';
+
+  /* ── FIREBASE CONFIG ─────────────────────────────────────────
+     Replace these values with your Firebase project config.
+     Get them from: Firebase Console → Project Settings → Your apps
+  ─────────────────────────────────────────────────────────── */
+  const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyDMhzYLMmaM3th9RV78YX1qoIAQ4BD7kUs",
+    authDomain: "mjlifestyle.firebaseapp.com",
+    projectId: "mjlifestyle",
+    storageBucket: "mjlifestyle.firebasestorage.app",
+    messagingSenderId: "788719840768",
+    appId: "1:788719840768:web:28a8cbf1c94a869806b2e5",
+    measurementId: "G-BS5TJLC7ET"
+  };
+
+  /* ── GROQ CONFIG (for local dev without Cloud Functions) ────
+     For production, use the Cloud Function proxy instead.
+  ─────────────────────────────────────────────────────────── */
+  const GROQ_CONFIG = {
+    apiKey: "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",   // Move to Cloud Function for production
+    apiUrl: "https://api.groq.com/openai/v1/chat/completions",
+    model:  "llama-3.3-70b-versatile",
+  };
+
+  /* ── GOOGLE SHEETS CONFIG ────────────────────────────────────
+     Make your sheet public (view-only) and paste the ID here.
+     Sheet format: Column A = Question, B = Answer, C = Category
+  ─────────────────────────────────────────────────────────── */
+  const SHEETS_CONFIG = {
+    sheetId:   "YOUR_GOOGLE_SHEET_ID",
+    sheetName: "FAQs",
+    apiKey:    "YOUR_GOOGLE_SHEETS_API_KEY",  // Restricted to Sheets API only
+  };
+
+  /* ══════════════════════════════════════════════════════════
+     INIT FIREBASE SERVICES
+  ══════════════════════════════════════════════════════════ */
+  const app       = initializeApp(FIREBASE_CONFIG);
+  const auth      = getAuth(app);
+  const db        = getFirestore(app);
+  const analytics = getAnalytics(app);
+  const provider  = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account', hd: '' });
+
+  /* ══════════════════════════════════════════════════════════
+     APP STATE
+  ══════════════════════════════════════════════════════════ */
+  const State = {
+    user:         null,
+    sessionId:    null,
+    messages:     [],          // [{role, content}]
+    isStreaming:  false,
+    ttsEnabled:   false,
+    currentUtterance: null,
+  };
+
+  /* ══════════════════════════════════════════════════════════
+     INDIA ELECTION SYSTEM PROMPT
+  ══════════════════════════════════════════════════════════ */
+  const SYSTEM_PROMPT = `You are MataBot (मातबोट), India's expert election education assistant. You help citizens understand India's democratic process clearly and impartially.
+
+## EXPERTISE:
+- Constitutional framework: Articles 324–329, RP Acts 1950 & 1951
+- Lok Sabha (543 seats, FPTP), Rajya Sabha (245, PR-STV), Vidhan Sabha, Panchayat elections
+- Electoral Photo Identity Card (EPIC), voter registration (Form 6/7/8), NVSP portal
+- EVM (Electronic Voting Machine) — M2/M3 models, BEL/ECIL manufacture, security features
+- VVPAT (Voter Verifiable Paper Audit Trail) — 5-second slip display
+- NOTA (introduced 2013) — symbol, legal effect, statistics
+- Model Code of Conduct (आदर्श आचार संहिता) — trigger, prohibitions, enforcement
+- Election timeline: announcement → MCC → nomination → polling → counting → certification
+- Campaign finance: ₹95 lakh Lok Sabha limit, Form 26, electoral bonds (struck down 2024)
+- cVIGIL app, Suvidha portal, KYC app, Voter Turnout app (ECI digital tools)
+- Presidential election (Electoral College), Vice Presidential, by-elections
+- Recount procedures, election petitions (High Court/Supreme Court)
+- 2024 General Election: 969M voters, 7 phases, April–June 2024
+- Delimitation Commission, gerrymandering prevention, reserved constituencies (SC/ST)
+
+## STYLE:
+- Warm, clear, strictly nonpartisan — never endorse parties or candidates
+- Use **bold** for key terms (EVM, NOTA, MCC, EPIC, etc.)
+- Explain Hindi terms alongside English: "मतदाता सूची (Electoral Roll)"
+- Numbered steps for processes; bullet points for lists
+- Cite constitutional articles when relevant (e.g., Article 324)
+- Aim for 200–380 words; expand if user requests detail
+- End with one helpful follow-up suggestion
+- Celebrate democratic participation: every vote matters!`;
+
+  /* ══════════════════════════════════════════════════════════
+     GOOGLE AUTH
+  ══════════════════════════════════════════════════════════ */
+  onAuthStateChanged(auth, (user) => {
+    State.user = user;
+    updateAuthUI(user);
+    if (user) {
+      loadChatHistory();
+      logEvent(analytics, 'login', { method: 'Google' });
+    }
+  });
+
+  async function signIn() {
+    try {
+      await signInWithPopup(auth, provider);
+      showToast('✅ Signed in successfully!');
+    } catch (err) {
+      if (err.code !== 'auth/popup-closed-by-user') {
+        showToast('❌ Sign-in failed. Please try again.');
+        console.error('Auth error:', err);
+      }
+    }
+  }
+
+  async function handleSignOut() {
+    try {
+      await signOut(auth);
+      State.sessionId = null;
+      State.messages  = [];
+      clearHistoryUI();
+      showToast('👋 Signed out.');
+    } catch (err) {
+      console.error('Sign-out error:', err);
+    }
+  }
+
+  function updateAuthUI(user) {
+    const signInBtn = document.getElementById('signInBtn');
+    const userInfo  = document.getElementById('userInfo');
+    const userPhoto = document.getElementById('userPhoto');
+    const userName  = document.getElementById('userName');
+
+    if (user) {
+      signInBtn.classList.add('hidden');
+      userInfo.classList.remove('hidden');
+      userPhoto.src = user.photoURL || '';
+      userPhoto.alt = user.displayName || 'User';
+      userName.textContent = user.displayName?.split(' ')[0] || 'User';
+    } else {
+      signInBtn.classList.remove('hidden');
+      userInfo.classList.add('hidden');
+    }
+  }
+
+  document.getElementById('signInBtn').addEventListener('click', signIn);
+  document.getElementById('signOutBtn').addEventListener('click', handleSignOut);
+
+  /* ══════════════════════════════════════════════════════════
+     FIRESTORE — SESSION & MESSAGE PERSISTENCE
+  ══════════════════════════════════════════════════════════ */
+  async function createSession(firstMessage) {
+    if (!State.user) return null;
+    try {
+      const sessionRef = await addDoc(collection(db, 'sessions'), {
+        uid:       State.user.uid,
+        title:     firstMessage.slice(0, 80),
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      return sessionRef.id;
+    } catch (err) {
+      console.error('Session create error:', err);
+      return null;
+    }
+  }
+
+  async function saveMessage(role, content) {
+    if (!State.user || !State.sessionId) return;
+    try {
+      await addDoc(collection(db, 'sessions', State.sessionId, 'messages'), {
+        role, content, timestamp: serverTimestamp(),
+      });
+      // Update session updatedAt
+      await setDoc(doc(db, 'sessions', State.sessionId),
+        { updatedAt: serverTimestamp() }, { merge: true });
+    } catch (err) {
+      console.error('Save message error:', err);
+    }
+  }
+
+  async function loadChatHistory() {
+    if (!State.user) return;
+    try {
+      const q    = query(
+        collection(db, 'sessions'),
+        where('uid', '==', State.user.uid),
+        orderBy('updatedAt', 'desc'),
+        limit(20)
+      );
+      const snap = await getDocs(q);
+      renderHistoryList(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    } catch (err) {
+      console.error('Load history error:', err);
+    }
+  }
+
+  function renderHistoryList(sessions) {
+    const list  = document.getElementById('historyList');
+    const empty = document.getElementById('historyEmpty');
+    list.innerHTML = '';
+
+    if (!sessions.length) {
+      empty.textContent = 'No conversations yet. Start asking!';
+      return;
+    }
+    empty.textContent = '';
+
+    sessions.forEach(s => {
+      const item = document.createElement('button');
+      item.className = 'history-item';
+      item.setAttribute('role', 'listitem');
+      item.setAttribute('aria-label', `Load conversation: ${s.title}`);
+      item.innerHTML = `
+        <span class="history-title">${escapeHtml(s.title || 'Conversation')}</span>
+        <span class="history-date">${formatDate(s.updatedAt)}</span>
+      `;
+      item.addEventListener('click', () => loadSession(s.id));
+      list.appendChild(item);
+    });
+  }
+
+  async function loadSession(sessionId) {
+    if (!State.user) return;
+    try {
+      const q    = query(
+        collection(db, 'sessions', sessionId, 'messages'),
+        orderBy('timestamp', 'asc')
+      );
+      const snap = await getDocs(q);
+      const msgs = snap.docs.map(d => d.data());
+
+      State.sessionId = sessionId;
+      State.messages  = msgs.map(m => ({ role: m.role, content: m.content }));
+
+      // Re-render chat
+      const chatArea = document.getElementById('main-content');
+      chatArea.innerHTML = '';
+      msgs.forEach(m => {
+        if (m.role === 'user')      appendUserBubble(m.content);
+        if (m.role === 'assistant') appendBotBubble(m.content);
+      });
+
+      closeHistoryPanel();
+      announce('Conversation loaded');
+      logEvent(analytics, 'load_session');
+    } catch (err) {
+      console.error('Load session error:', err);
+      showToast('❌ Could not load conversation.');
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     GOOGLE SHEETS — FAQ LOADER
+  ══════════════════════════════════════════════════════════ */
+  async function loadFaqsFromSheets() {
+    if (!SHEETS_CONFIG.sheetId || SHEETS_CONFIG.sheetId === 'YOUR_GOOGLE_SHEET_ID') return;
+    try {
+      const range = encodeURIComponent(`${SHEETS_CONFIG.sheetName}!A2:C50`);
+      const url   = `https://sheets.googleapis.com/v4/spreadsheets/${SHEETS_CONFIG.sheetId}/values/${range}?key=${SHEETS_CONFIG.apiKey}`;
+      const res   = await fetch(url);
+      if (!res.ok) return;
+
+      const data = await res.json();
+      const rows = data.values || [];
+      if (!rows.length) return;
+
+      const faqList    = document.getElementById('faqList');
+      const faqSection = document.getElementById('faqSection');
+      faqList.innerHTML = '';
+
+      rows.slice(0, 5).forEach(row => {
+        if (!row[0] || !row[1]) return;
+        const item = document.createElement('div');
+        item.className = 'faq-item';
+        item.setAttribute('role', 'listitem');
+        item.innerHTML = `
+          <button class="faq-q" aria-expanded="false" aria-controls="faq-a-${row[0].slice(0,10).replace(/\s/g,'_')}">
+            ${escapeHtml(row[0])}
+          </button>
+          <div class="faq-a hidden" id="faq-a-${row[0].slice(0,10).replace(/\s/g,'_')}" role="region">
+            ${escapeHtml(row[1])}
+          </div>`;
+        item.querySelector('.faq-q').addEventListener('click', (e) => {
+          const btn    = e.currentTarget;
+          const answer = btn.nextElementSibling;
+          const open   = !answer.classList.contains('hidden');
+          answer.classList.toggle('hidden', open);
+          btn.setAttribute('aria-expanded', String(!open));
+        });
+        faqList.appendChild(item);
+      });
+
+      faqSection.classList.remove('hidden');
+      logEvent(analytics, 'faqs_loaded', { count: rows.length });
+    } catch (err) {
+      console.error('Sheets FAQ error:', err);
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     GOOGLE ANALYTICS — Event tracking
+  ══════════════════════════════════════════════════════════ */
+  function trackEvent(eventName, params = {}) {
+    try { logEvent(analytics, eventName, params); } catch (_) {}
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     GROQ API — Streaming chat
+  ══════════════════════════════════════════════════════════ */
+  async function callGroq(userText) {
+    const payload = {
+      model:       GROQ_CONFIG.model,
+      messages:    [{ role: 'system', content: SYSTEM_PROMPT }, ...State.messages],
+      max_tokens:  1300,
+      temperature: 0.70,
+      stream:      true,
+    };
+
+    const res = await fetch(GROQ_CONFIG.apiUrl, {
+      method:  'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'Authorization': `Bearer ${GROQ_CONFIG.apiKey}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || `HTTP ${res.status}`);
+    }
+    return res;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     SEND MESSAGE — Core flow
+  ══════════════════════════════════════════════════════════ */
+  async function sendMessage(prefill) {
+    const input = document.getElementById('userInput');
+    const text  = (prefill || input.value).trim();
+    if (!text || State.isStreaming) return;
+
+    // Remove welcome screen
+    document.getElementById('welcomeScreen')?.remove();
+
+    State.isStreaming = true;
+    document.getElementById('sendBtn').disabled = true;
+    input.value = '';
+    input.style.height = 'auto';
+
+    // Create Firestore session on first message
+    if (!State.sessionId && State.user) {
+      State.sessionId = await createSession(text);
+    }
+
+    // Render user bubble
+    appendUserBubble(text);
+    State.messages.push({ role: 'user', content: text });
+    if (State.user && State.sessionId) saveMessage('user', text);
+
+    // Analytics
+    trackEvent('chat_message_sent', { question_length: text.length });
+
+    // Bot bubble with typing indicator
+    const bubble = appendTypingBubble();
+    let fullText = '';
+    let stepCnt  = 0;
+
+    try {
+      const res     = await callGroq(text);
+      const reader  = res.body.getReader();
+      const decoder = new TextDecoder();
+      let   init    = false;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        for (const line of decoder.decode(value, { stream: true }).split('\n')) {
+          const t = line.trim();
+          if (!t || t === 'data: [DONE]' || !t.startsWith('data: ')) continue;
+          try {
+            const delta = JSON.parse(t.slice(6)).choices?.[0]?.delta?.content || '';
+            if (delta) {
+              if (!init) { bubble.innerHTML = ''; init = true; }
+              fullText += delta;
+              stepCnt   = 0;
+              bubble.innerHTML = `<p style="margin:0">${formatMarkdown(fullText, stepCnt)}</p><span class="cursor" aria-hidden="true"></span>`;
+              document.getElementById('main-content').scrollTop = 9e9;
+            }
+          } catch (_) {}
+        }
+      }
+
+      // Finalize
+      stepCnt = 0;
+      bubble.innerHTML = `<p style="margin:0">${formatMarkdown(fullText, stepCnt)}</p>`;
+      State.messages.push({ role: 'assistant', content: fullText });
+      if (State.user && State.sessionId) saveMessage('assistant', fullText);
+
+      // Text-to-Speech
+      if (State.ttsEnabled) speakText(fullText);
+
+      announce('Answer received');
+      trackEvent('chat_response_received', { response_length: fullText.length });
+
+    } catch (err) {
+      console.error('Groq error:', err);
+      bubble.style.borderColor = 'rgba(255,80,80,0.3)';
+      bubble.innerHTML = `<p style="margin:0"><strong style="color:#fca5a5">⚠️ Error</strong><br>${escapeHtml(err.message)}</p>`;
+      announce('Error: ' + err.message);
+    }
+
+    State.isStreaming = false;
+    document.getElementById('sendBtn').disabled = false;
+    input.focus();
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     DOM HELPERS — Render bubbles
+  ══════════════════════════════════════════════════════════ */
+  function appendUserBubble(text) {
+    const chatArea = document.getElementById('main-content');
+    const div = document.createElement('div');
+    div.className = 'msg user';
+    div.setAttribute('role', 'article');
+    div.setAttribute('aria-label', 'Your message');
+    div.innerHTML = `
+      <div class="avatar user-av" aria-hidden="true">आप</div>
+      <div class="bubble">${escapeHtml(text)}</div>`;
+    chatArea.appendChild(div);
+    chatArea.scrollTop = chatArea.scrollHeight;
+  }
+
+  function appendBotBubble(text) {
+    const chatArea = document.getElementById('main-content');
+    const div = document.createElement('div');
+    div.className = 'msg bot';
+    div.setAttribute('role', 'article');
+    div.setAttribute('aria-label', 'MataBot response');
+    let sc = 0;
+    div.innerHTML = `
+      <div class="avatar bot" aria-hidden="true">☸</div>
+      <div class="bubble"><p style="margin:0">${formatMarkdown(text, sc)}</p></div>`;
+    chatArea.appendChild(div);
+    chatArea.scrollTop = chatArea.scrollHeight;
+    return div.querySelector('.bubble');
+  }
+
+  function appendTypingBubble() {
+    const chatArea = document.getElementById('main-content');
+    const div = document.createElement('div');
+    div.className = 'msg bot';
+    div.setAttribute('role', 'article');
+    div.setAttribute('aria-label', 'MataBot is typing');
+    div.innerHTML = `
+      <div class="avatar bot" aria-hidden="true">☸</div>
+      <div class="bubble" id="activeBubble">
+        <div class="typing" aria-label="Loading response">
+          <span></span><span></span><span></span>
+        </div>
+      </div>`;
+    chatArea.appendChild(div);
+    chatArea.scrollTop = chatArea.scrollHeight;
+    return div.querySelector('#activeBubble');
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     MARKDOWN FORMATTER
+  ══════════════════════════════════════════════════════════ */
+  let _sc = 0;
+  function formatMarkdown(raw) {
+    _sc = 0;
+    return raw
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/^#{1,3} (.+)$/gm, (_,t) =>
+        `<h3 style="font-family:'Yatra One',serif;font-size:15px;color:#FF9933;margin:14px 0 7px;font-weight:400">${t}</h3>`)
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g,     '<em>$1</em>')
+      .replace(/^\d+\. (.+)$/gm, (_,c) => {
+        _sc++;
+        return `<div style="display:flex;gap:10px;margin:5px 0;align-items:flex-start">
+          <div style="min-width:22px;height:22px;background:rgba(255,153,51,.12);border:1px solid rgba(255,153,51,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#FF9933;flex-shrink:0;margin-top:1px">${_sc}</div>
+          <div>${c}</div></div>`;
+      })
+      .replace(/^[-•] (.+)$/gm, (_,c) =>
+        `<div style="display:flex;gap:9px;margin:4px 0"><span style="color:#FF9933;font-weight:700;flex-shrink:0">›</span><span>${c}</span></div>`)
+      .replace(/\n\n/g,'</p><p style="margin-top:9px">')
+      .replace(/\n/g,'<br>');
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     TEXT-TO-SPEECH (Web Speech API)
+  ══════════════════════════════════════════════════════════ */
+  function speakText(text) {
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const clean = text.replace(/<[^>]+>/g, '').replace(/\*\*/g,'').replace(/\*/g,'').trim();
+    const utt   = new SpeechSynthesisUtterance(clean.slice(0, 600));
+    utt.lang    = 'en-IN';
+    utt.rate    = 0.9;
+    utt.pitch   = 1;
+    // Prefer an Indian English voice if available
+    const voices = window.speechSynthesis.getVoices();
+    const indVoice = voices.find(v => v.lang === 'en-IN') || voices.find(v => v.lang.startsWith('en'));
+    if (indVoice) utt.voice = indVoice;
+    State.currentUtterance = utt;
+    window.speechSynthesis.speak(utt);
+    trackEvent('tts_used');
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     HISTORY PANEL
+  ══════════════════════════════════════════════════════════ */
+  function openHistoryPanel() {
+    const panel = document.getElementById('historyPanel');
+    const btn   = document.getElementById('historyBtn');
+    panel.classList.remove('hidden');
+    panel.setAttribute('aria-hidden', 'false');
+    btn.setAttribute('aria-expanded', 'true');
+    if (State.user) loadChatHistory();
+    else document.getElementById('historyEmpty').textContent = 'Sign in to view history.';
+  }
+
+  function closeHistoryPanel() {
+    const panel = document.getElementById('historyPanel');
+    const btn   = document.getElementById('historyBtn');
+    panel.classList.add('hidden');
+    panel.setAttribute('aria-hidden', 'true');
+    btn.setAttribute('aria-expanded', 'false');
+  }
+
+  function clearHistoryUI() {
+    document.getElementById('historyList').innerHTML = '';
+  }
+
+  document.getElementById('historyBtn').addEventListener('click',  openHistoryPanel);
+  document.getElementById('closeHistory').addEventListener('click', closeHistoryPanel);
+
+  /* ══════════════════════════════════════════════════════════
+     TTS TOGGLE
+  ══════════════════════════════════════════════════════════ */
+  document.getElementById('ttsToggle').addEventListener('click', function() {
+    State.ttsEnabled = !State.ttsEnabled;
+    this.setAttribute('aria-pressed', String(State.ttsEnabled));
+    this.classList.toggle('btn-icon--active', State.ttsEnabled);
+    if (!State.ttsEnabled && window.speechSynthesis) window.speechSynthesis.cancel();
+    showToast(State.ttsEnabled ? '🔊 Text-to-speech ON' : '🔇 Text-to-speech OFF');
+    trackEvent('tts_toggle', { enabled: State.ttsEnabled });
+  });
+
+  /* ══════════════════════════════════════════════════════════
+     CLEAR CHAT
+  ══════════════════════════════════════════════════════════ */
+  function clearChat() {
+    if (State.isStreaming) return;
+    State.messages  = [];
+    State.sessionId = null;
+    const chatArea  = document.getElementById('main-content');
+    chatArea.innerHTML = '';
+
+    const welcome = document.createElement('section');
+    welcome.className = 'welcome';
+    welcome.id = 'welcomeScreen';
+    welcome.setAttribute('aria-labelledby', 'welcomeTitle');
+    welcome.innerHTML = `
+      <div class="welcome-header">
+        <div class="tricolor-bar" aria-hidden="true"><div></div><div></div><div></div></div>
+        <span class="welcome-icon" aria-hidden="true">🗳️</span>
+        <h2 id="welcomeTitle">जय हिन्द! Welcome to MataBot</h2>
+        <p>Your complete AI guide to India's democratic election system. Ask in <strong>English</strong> or <strong>Hindi</strong>!</p>
+        <div class="tricolor-bar" aria-hidden="true"><div></div><div></div><div></div></div>
+      </div>`;
+    chatArea.appendChild(welcome);
+    loadFaqsFromSheets();
+    trackEvent('chat_cleared');
+  }
+
+  document.getElementById('clearBtn').addEventListener('click', clearChat);
+
+  /* ══════════════════════════════════════════════════════════
+     INPUT — textarea auto-resize + keyboard
+  ══════════════════════════════════════════════════════════ */
+  const input = document.getElementById('userInput');
+
+  input.addEventListener('input', () => {
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 130) + 'px';
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (!State.isStreaming) sendMessage();
+    }
+  });
+
+  document.getElementById('sendBtn').addEventListener('click', () => sendMessage());
+
+  /* ══════════════════════════════════════════════════════════
+     UTILITIES
+  ══════════════════════════════════════════════════════════ */
+  function showToast(msg, duration = 3000) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.remove('hidden');
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => toast.classList.add('hidden'), duration);
+  }
+
+  function announce(msg) {
+    const announcer = document.getElementById('sr-announcer');
+    announcer.textContent = '';
+    requestAnimationFrame(() => { announcer.textContent = msg; });
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function formatDate(ts) {
+    if (!ts) return '';
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleDateString('en-IN', { day:'numeric', month:'short' });
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     MANDALA BACKGROUND
+  ══════════════════════════════════════════════════════════ */
+  function buildMandala() {
+    const container = document.getElementById('mandala');
+    [120,200,300,420,560,720,900].forEach((size, i) => {
+      const ring = document.createElement('div');
+      ring.className = 'mandala-ring';
+      ring.style.cssText = `width:${size}px;height:${size}px;--spd:${40+i*15}s;--rev:${i%2===0?'normal':'reverse'};border-color:${['#FF9933','#138808','#000080'][i%3]}`;
+      container.appendChild(ring);
+    });
+  }
+  buildMandala();
+
+  /* ══════════════════════════════════════════════════════════
+     GLOBAL HELPERS (called from HTML onclick)
+  ══════════════════════════════════════════════════════════ */
+  window.askChip      = (text) => { if (!State.isStreaming) sendMessage(text); };
+  window.handleCardKey = (e, text) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); askChip(text); }
+  };
+
+  /* ══════════════════════════════════════════════════════════
+     STARTUP
+  ══════════════════════════════════════════════════════════ */
+  loadFaqsFromSheets();
+  trackEvent('app_open', { platform: 'web' });
+  input.focus();
+
+</script>
+</body>
+</html>
